@@ -1,32 +1,35 @@
 import os
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_litellm import ChatLiteLLM
 from langchain.chains import LLMChain
-from app.src.prompts import chat_prompt
-from app.src.memory import get_memory
+from app.src.prompt import PromptFactory
+from app.src.parser import ParserFactory
+from app.src.parser import PythonCodeOutputParser, ExplainOutputParser
+from app.src.memory import BufferMemory
 
-def build_test_chain():
+def build_chain(task: str = "test"):
+
     load_dotenv()
-    api_key = os.getenv("GOOGLE_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise ValueError("❌ GOOGLE_API_KEY manquant dans .env")
+        raise ValueError("❌ GROQ_API_KEY manquant dans .env")
 
-    # Instanciation du modèle Gemini
-    llm = ChatGoogleGenerativeAI(
-        model="models/gemini-1.5-flash-latest",
-        google_api_key=api_key,
-        temperature=0.5,
-        top_p=0.9
+    llm = ChatLiteLLM(
+        model="groq/llama-3.3-70b-versatile",
+        api_key=api_key,
     )
 
-    # Activation de la mémoire (conversationnelle, glissante)
-    memory = get_memory(k=5)  # glisse sur les 5 derniers échanges
+    output_parser = PythonCodeOutputParser()
 
-    # Chaîne complète avec mémoire
+    prompt = PromptFactory.get_prompt(task)
+    output_parser = ParserFactory.get_parser(task)
+
+    # Chaîne de base sans mémoire (pipe)
     chain = LLMChain(
         llm=llm,
-        prompt=chat_prompt,
-        memory=memory
+        prompt=prompt,
+        memory=BufferMemory(memory_key="chat_history", return_messages=True),
+        output_parser=output_parser
     )
 
-    return chain
+    return chain, llm
