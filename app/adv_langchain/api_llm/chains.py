@@ -4,12 +4,12 @@ from dotenv import load_dotenv
 from langchain_litellm import ChatLiteLLM
 from langchain_core.exceptions import OutputParserException
 
-from app.adv_langchain.prompts import check_prompt, refactor_prompt, explain_prompt, test_prompt
-from app.adv_langchain.parser import (
+from prompts import check_prompt, refactor_prompt, explain_prompt, test_prompt
+from parser import (
     check_parser, refactor_parser, explain_parser, test_parser,
     CheckOutput, RefactorOutput, ExplainOutput, TestOutput
 )
-from app.adv_langchain.logger import save_llm_interaction
+from logger import save_llm_interaction
 
 def get_llm():
     load_dotenv()

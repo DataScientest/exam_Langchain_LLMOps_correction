@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  api_auth:
+    build:
+      context: ./app/adv_langchain/api_auth
+    ports:
+      - "8000:8000"
+    volumes:
+      - .env:/app/.env 
+
+  api_llm:
+    build:
+      context: ./app/adv_langchain/api_llm
+    ports:
+      - "8001:8001"
+    volumes:
+      - .env:/app/.env 
+
+  streamlit:
+    build:
+      context: ./app/adv_langchain/streamlit
+      dockerfile: Dockerfile
+    ports:
+      - "8501:8501"
+    volumes:
+      - .env:/app/.env 
+    depends_on:
+      - api_auth
+      - api_llm

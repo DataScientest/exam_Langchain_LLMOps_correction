@@ -17,7 +17,7 @@ if st.session_state.page == "login":
 
     if st.button("Se connecter"):
         try:
-            res = requests.post("http://localhost:8000/login", json={
+            res = requests.post("http://api_auth:8000/login", json={
                 "username": username,
                 "password": password
             })
@@ -44,7 +44,7 @@ elif st.session_state.page == "llm":
 
     if st.button("Analyser"):
         try:
-            res = requests.post("http://localhost:8001/analyze_code", json={
+            res = requests.post("http://api_llm:8001/analyze_code", json={
                 "token": st.session_state.token,
                 "code": code
             })

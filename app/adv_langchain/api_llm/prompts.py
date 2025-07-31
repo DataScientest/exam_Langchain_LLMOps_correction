@@ -1,6 +1,6 @@
 # app/prompts.py
 from langchain.prompts import PromptTemplate
-from app.adv_langchain.parser import check_parser, refactor_parser, explain_parser, test_parser
+from parser import check_parser, refactor_parser, explain_parser, test_parser
 
 check_prompt = PromptTemplate(
     template="""

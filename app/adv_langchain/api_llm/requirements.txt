@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+langchain
+langchain-core
+langchain-litellm
+pydantic
+python-dotenv
+PyJWT
+dotenv

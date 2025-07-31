@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import jwt
-from app.adv_langchain.chains import AnalyzeCodeChain
+from chains import AnalyzeCodeChain
 
 SECRET_KEY = "secret123"
 ALGORITHM = "HS256"
