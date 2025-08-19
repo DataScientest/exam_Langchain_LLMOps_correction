@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Form
 from pydantic import BaseModel
 import os
 
-from app.basic_langchain.chain import build_chain
+from app.basic_langchain.chains import build_chain
 
 app = FastAPI()
 

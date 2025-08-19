@@ -2,8 +2,10 @@ fastapi
 uvicorn
 langchain
 langchain-core
+langchain-community
 langchain-litellm
-pydantic
 python-dotenv
+pydantic>=2
 PyJWT
-dotenv
+openai<1.100.0
+httpx<0.28
