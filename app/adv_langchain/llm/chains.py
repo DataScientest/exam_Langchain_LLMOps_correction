@@ -4,6 +4,7 @@ from langchain.prompts import PromptTemplate
 from langchain.output_parsers import PydanticOutputParser
 from langchain_core.output_parsers import StrOutputParser
 from langchain.callbacks import get_openai_callback
+from langsmith.run_helpers import traceable
 
 from .llm import llm
 from .prompts import (
@@ -83,6 +84,7 @@ class AnalyzeCodeChain:
             save_llm_interaction(prompt_text, str(e), step=f"{step_name} ❌ ERROR")
             raise
 
+    @traceable(name="AnalyzeCodeChain")
     def invoke(self, inputs: Union[str, Dict]) -> Dict:
         if isinstance(inputs, str):
             code = inputs
