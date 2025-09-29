@@ -1,0 +1,10 @@
+fastapi==0.116.1
+uvicorn==0.30.6
+pydantic==2.11.7
+langchain==0.3.27
+langchain-community==0.3.27
+langchain-litellm==0.2.2
+litellm==1.74.9.post1
+langsmith==0.4.27
+langchain-core==0.3.74
+pyjwt==2.10.1

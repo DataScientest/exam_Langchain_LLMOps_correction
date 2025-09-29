@@ -1,32 +1,43 @@
 version: "3.9"
 
 services:
-  api_auth:
+  auth:
     build:
-      context: ./app/adv_langchain/api_auth
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - .env:/app/.env
-
-  api_llm:
-    build:
-      context: ./app/adv_langchain
-      dockerfile: api_llm/Dockerfile
+      context: ./src/api/authentification
+      dockerfile: Dockerfile.auth
+    container_name: auth_service
     ports:
       - "8001:8001"
-    volumes:
-      - .env:/app/.env
+    networks:
+      - app_network
+
+  main:
+    build:
+      context: ./src
+      dockerfile: api/assistant/Dockerfile.main
+    container_name: main_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth
+    networks:
+      - app_network
+    env_file:
+      - .env
 
   streamlit:
     build:
-      context: ./app/adv_langchain/streamlit
-      dockerfile: Dockerfile
+      context: ./src
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit_app
     ports:
       - "8501:8501"
-    volumes:
-      - .env:/app/.env
     depends_on:
-      - api_auth
-      - api_llm
+      - auth
+      - main
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge

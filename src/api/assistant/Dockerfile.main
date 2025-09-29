@@ -1,0 +1,16 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Installer dépendances Assistant
+COPY api/assistant/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copier tout le dossier src dans /app/src
+COPY . /app/src
+
+WORKDIR /app/src
+
+EXPOSE 8000
+
+CMD ["uvicorn", "api.assistant.main:app", "--host", "0.0.0.0", "--port", "8000"]
