@@ -1,0 +1,19 @@
+[project]
+name = "langchain-mlops"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "==3.13.*"
+dependencies = [
+    "fastapi==0.116.1",
+    "jwt==1.4.0",
+    "langchain==0.3.27",
+    "langchain-community==0.3.27",
+    "langchain-litellm==0.2.2",
+    "litellm==1.74.9.post1",
+    "mlflow==3.1.4",
+    "pydantic==2.11.7",
+    "pyjwt==2.10.1",
+    "python-multipart==0.0.20",
+    "streamlit==1.47.1",
+]

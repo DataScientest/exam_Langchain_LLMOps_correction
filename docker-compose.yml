@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  auth:
+    build:
+      context: ./src/api/authentification
+      dockerfile: Dockerfile.auth
+    container_name: auth_service
+    ports:
+      - "8001:8001"
+    networks:
+      - app_network
+
+  main:
+    build:
+      context: ./src
+      dockerfile: api/assistant/Dockerfile.main
+    container_name: main_service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - auth
+    networks:
+      - app_network
+    env_file:
+      - .env
+
+  streamlit:
+    build:
+      context: ./src
+      dockerfile: Dockerfile.streamlit
+    container_name: streamlit_app
+    ports:
+      - "8501:8501"
+    depends_on:
+      - auth
+      - main
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
