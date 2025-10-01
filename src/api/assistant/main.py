@@ -31,25 +31,19 @@ def get_current_user(authorization: str = Header(...)) -> User:
     except Exception:
         raise HTTPException(status_code=401, detail="Token invalide ou expiré")
 
-
 # === ENDPOINTS ===
 
 @app.post("/analyze")
 def analyze_code(payload: CodeInput, user: User = Depends(get_current_user)):
-    try:
-        chain_with_memory = RunnableWithMessageHistory(
-            analysis_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
-        )
-        config = {"configurable": {"session_id": user.username}}
-        result = chain_with_memory.invoke(
-            {"input": payload.code, "format_instructions": analysis_parser.get_format_instructions()},
-            config=config
-        )
+    session = get_session_history(user.username)
 
-        session = get_session_history(user.username)
+    try:
+        result = analysis_chain.invoke({
+            "input": payload.code,
+            "format_instructions": analysis_parser.get_format_instructions()
+        })
+
+        session.add_user_message(payload.code)
         session.add_ai_message(str(result.dict()))
 
         return result.dict()
@@ -59,20 +53,14 @@ def analyze_code(payload: CodeInput, user: User = Depends(get_current_user)):
 
 @app.post("/generate_test")
 def generate_test(payload: CodeInput, user: User = Depends(get_current_user)):
+    session = get_session_history(user.username)
     try:
-        chain_with_memory = RunnableWithMessageHistory(
-            test_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
-        )
-        config = {"configurable": {"session_id": user.username}}
-        test = chain_with_memory.invoke(
-            {"input": payload.code, "format_instructions": test_parser.get_format_instructions()},
-            config=config
-        )
+        test = test_chain.invoke({
+            "input": payload.code,
+            "format_instructions": test_parser.get_format_instructions()
+        })
 
-        session = get_session_history(user.username)
+        session.add_user_message(payload.code)
         session.add_ai_message(str(test.dict()))
 
         return test.dict()
@@ -80,23 +68,18 @@ def generate_test(payload: CodeInput, user: User = Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=f"Erreur génération test: {e}")
 
 
-
 @app.post("/explain_test")
 def explain_test(payload: TestInput, user: User = Depends(get_current_user)):
+    session = get_session_history(user.username)
+
     try:
-        chain_with_memory = RunnableWithMessageHistory(
-            explain_test_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
-        )
-        config = {"configurable": {"session_id": user.username}}
-        explanation = chain_with_memory.invoke(
-            {"input": payload.unit_test, "format_instructions": explain_test_parser.get_format_instructions()},
-            config=config
+        explanation = explain_test_chain.invoke({
+            "input": payload.unit_test,
+            "format_instructions": explain_test_parser.get_format_instructions()}
         )
 
         session = get_session_history(user.username)
+        session.add_user_message(payload.unit_test)
         session.add_ai_message(str(explanation.dict()))
 
         return explanation.dict()
@@ -106,23 +89,17 @@ def explain_test(payload: TestInput, user: User = Depends(get_current_user)):
 
 @app.post("/full_pipeline")
 def full_pipeline(payload: CodeInput, user: User = Depends(get_current_user)):
-    try:
-        config = {"configurable": {"session_id": user.username}}
+    session = get_session_history(user.username)
 
-        analysis_chain_with_memory = RunnableWithMessageHistory(
-            analysis_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
+    try:
+        analysis = analysis_chain.invoke({
+            "input": payload.code,
+            "format_instructions": analysis_parser.get_format_instructions()}
         )
-        analysis = analysis_chain_with_memory.invoke(
-            {"input": payload.code, "format_instructions": analysis_parser.get_format_instructions()},
-            config=config
-        )
+        session.add_user_message(payload.code)
+        session.add_ai_message(str(analysis.dict()))
 
         if not analysis.is_optimal:
-            session = get_session_history(user.username)
-            session.add_ai_message(str(analysis.dict()))
             return {
                 "analysis": analysis.dict(),
                 "error": "Code non optimal",
@@ -130,30 +107,17 @@ def full_pipeline(payload: CodeInput, user: User = Depends(get_current_user)):
                 "suggestions": analysis.suggestions,
             }
 
-        test_chain_with_memory = RunnableWithMessageHistory(
-            test_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
-        )
-        test = test_chain_with_memory.invoke(
-            {"input": payload.code, "format_instructions": test_parser.get_format_instructions()},
-            config=config
+        test = test_chain.invoke({
+            "input": payload.code, 
+            "format_instructions": test_parser.get_format_instructions()}
         )
 
-        explain_chain_with_memory = RunnableWithMessageHistory(
-            explain_test_chain,
-            get_session_history,
-            input_messages_key="input",
-            history_messages_key="messages",
-        )
-        explanation = explain_chain_with_memory.invoke(
-            {"input": test.unit_test, "format_instructions": explain_test_parser.get_format_instructions()},
-            config=config
+        explanation = explain_test_chain.invoke({
+            "input": test.unit_test,
+            "format_instructions": explain_test_parser.get_format_instructions()},
         )
 
         session = get_session_history(user.username)
-        session.add_ai_message(str(analysis.dict()))
         session.add_ai_message(str(test.dict()))
         session.add_ai_message(str(explanation.dict()))
 
